@@ -6,7 +6,7 @@
             "Effect": "Allow",
             "Principal": "*",
             "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::vipul-web-deploy-bket*"
+            "Resource": "arn:aws:s3:::web-deployment-110/*"
         }
     ]
 }
