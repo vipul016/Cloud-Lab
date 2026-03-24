@@ -1,0 +1,13 @@
+export const handler = async (event) => {
+    // Extract the file name from the S3 event object
+    const fileName = event.Records[0].s3.object.key;
+
+    // This shows up in CloudWatch Logs
+    console.log("File detected in S3:", fileName);
+
+    const response = {
+        statusCode: 200,
+        body: JSON.stringify('S3 Trigger Successful!'),
+    };
+    return response;
+};
