@@ -1,0 +1,31 @@
+export const handler = async (event) => {
+    // 1. Get data from URL parameters (?num1=10)
+    const queryParams = event.queryStringParameters || {};
+    
+    // 2. Get data from JSON body (Postman/Apps)
+    let bodyParams = {};
+    if (event.body) {
+        try {
+            bodyParams = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
+        } catch (e) {
+            console.error("JSON Parsing failed");
+        }
+    }
+
+    // 3. Combine them (Body takes priority if both exist)
+    const a = Number(bodyParams.num1 || queryParams.num1) || 0;
+    const b = Number(bodyParams.num2 || queryParams.num2) || 0;
+
+    const sum = a + b;
+
+    return {
+        statusCode: 200,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            received_num1: a,
+            received_num2: b,
+            result: sum,
+            source: event.body ? "Body" : "Query String"
+        }),
+    };
+};
