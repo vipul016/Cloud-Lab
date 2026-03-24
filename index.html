@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ANIMAX — Enter the Void</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:        #06060e;
+      --surface:   #0d0d1a;
+      --border:    #1a1a2e;
+      --neon-red:  #ff2d55;
+      --neon-cyan: #00f5ff;
+      --neon-gold: #ffd700;
+      --text:      #e8e8f0;
+      --muted:     #5a5a7a;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── Custom cursor ── */
+    .cursor {
+      position: fixed; top: 0; left: 0; z-index: 9999;
+      width: 12px; height: 12px;
+      background: var(--neon-cyan);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: transform .1s, width .2s, height .2s, background .2s;
+      box-shadow: 0 0 12px var(--neon-cyan);
+    }
+    .cursor-ring {
+      position: fixed; top: 0; left: 0; z-index: 9998;
+      width: 32px; height: 32px;
+      border: 1px solid var(--neon-cyan);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: transform .25s ease, opacity .2s;
+      opacity: .5;
+    }
+    body:hover .cursor { opacity: 1; }
+
+    /* ── Noise grain overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 9990;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: .03;
+      pointer-events: none;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 4rem;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      background: rgba(6,6,14,.7);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: .15em;
+      color: var(--neon-red);
+      text-shadow: 0 0 20px var(--neon-red);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--neon-cyan); text-shadow: 0 0 20px var(--neon-cyan); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      font-size: .95rem; font-weight: 500; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--muted); text-decoration: none;
+      transition: color .2s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; left: 0; bottom: -4px;
+      width: 0; height: 1px; background: var(--neon-cyan);
+      transition: width .3s;
+    }
+    .nav-links a:hover { color: var(--neon-cyan); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta {
+      padding: .5rem 1.4rem;
+      border: 1px solid var(--neon-red);
+      color: var(--neon-red) !important;
+      border-radius: 2px;
+      transition: background .2s, color .2s, box-shadow .2s !important;
+    }
+    .nav-cta:hover {
+      background: var(--neon-red) !important;
+      color: var(--bg) !important;
+      box-shadow: 0 0 24px var(--neon-red) !important;
+    }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 8rem 4rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg-text {
+      position: absolute;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(8rem, 20vw, 22rem);
+      color: rgba(255,45,85,.04);
+      white-space: nowrap;
+      user-select: none;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      letter-spacing: .05em;
+      animation: bgdrift 8s ease-in-out infinite alternate;
+    }
+    @keyframes bgdrift { from { transform: translate(-50%,-50%) scale(1); } to { transform: translate(-50%,-50%) scale(1.04); } }
+
+    .hero-kicker {
+      font-size: .8rem; letter-spacing: .4em;
+      text-transform: uppercase; color: var(--neon-cyan);
+      margin-bottom: 1rem;
+      animation: fadein .6s ease forwards;
+    }
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 6vw, 6.5rem);
+      line-height: .95;
+      letter-spacing: .03em;
+      animation: fadein .6s .15s ease both;
+    }
+    .hero-title .red  { color: var(--neon-red);  text-shadow: 0 0 30px var(--neon-red); }
+    .hero-title .cyan { color: var(--neon-cyan); text-shadow: 0 0 30px var(--neon-cyan); }
+    .hero-sub {
+      margin-top: 1.5rem;
+      font-size: 1.1rem; color: var(--muted); line-height: 1.6;
+      max-width: 38ch;
+      animation: fadein .6s .3s ease both;
+    }
+    .hero-actions {
+      margin-top: 2.5rem;
+      display: flex; gap: 1rem;
+      animation: fadein .6s .45s ease both;
+    }
+    .btn-primary {
+      padding: .8rem 2rem;
+      background: var(--neon-red);
+      color: #fff; border: none;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      cursor: pointer; border-radius: 2px;
+      box-shadow: 0 0 28px rgba(255,45,85,.4);
+      transition: box-shadow .2s, transform .15s;
+      text-decoration: none;
+    }
+    .btn-primary:hover { box-shadow: 0 0 48px rgba(255,45,85,.7); transform: translateY(-2px); }
+    .btn-ghost {
+      padding: .8rem 2rem;
+      background: transparent;
+      color: var(--text); border: 1px solid var(--border);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem; font-weight: 500;
+      letter-spacing: .1em; text-transform: uppercase;
+      cursor: pointer; border-radius: 2px;
+      transition: border-color .2s, color .2s;
+      text-decoration: none;
+    }
+    .btn-ghost:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+
+    /* hero visual side */
+    .hero-visual {
+      display: flex; justify-content: center; align-items: center;
+      position: relative;
+      animation: fadein .8s .2s ease both;
+    }
+    .hero-card {
+      width: 320px; height: 440px;
+      background: linear-gradient(145deg, #0d0d1a 0%, #12122a 100%);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 60px rgba(0,245,255,.07), 0 40px 80px rgba(0,0,0,.6);
+      transform: perspective(800px) rotateY(-8deg) rotateX(3deg);
+      transition: transform .4s;
+    }
+    .hero-card:hover { transform: perspective(800px) rotateY(-3deg) rotateX(1deg); }
+    .hero-card-art {
+      width: 100%; height: 70%;
+      background:
+        radial-gradient(ellipse at 40% 30%, rgba(255,45,85,.3) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(0,245,255,.2) 0%, transparent 50%),
+        linear-gradient(160deg, #0a0a1a 0%, #1a0818 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 6rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-card-art::after {
+      content: ''; position: absolute; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.1) 2px, rgba(0,0,0,.1) 4px);
+    }
+    .hero-card-art .kanji {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 5rem; font-weight: 700;
+      color: rgba(255,45,85,.8);
+      text-shadow: 0 0 40px var(--neon-red);
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: .8; } 50% { opacity: 1; text-shadow: 0 0 80px var(--neon-red); } }
+    .hero-card-info { padding: 1rem 1.2rem; }
+    .hero-card-info .tag {
+      font-size: .7rem; letter-spacing: .25em; text-transform: uppercase;
+      color: var(--neon-cyan); margin-bottom: .4rem;
+    }
+    .hero-card-info h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem; letter-spacing: .05em; line-height: 1;
+    }
+    .hero-card-info p { font-size: .85rem; color: var(--muted); margin-top: .3rem; }
+    .rating {
+      position: absolute; top: 1rem; right: 1rem;
+      background: rgba(255,215,0,.1); border: 1px solid var(--neon-gold);
+      color: var(--neon-gold); font-size: .8rem; font-weight: 700;
+      padding: .2rem .6rem; border-radius: 2px;
+      letter-spacing: .05em;
+    }
+
+    /* floating badges */
+    .badge {
+      position: absolute;
+      padding: .3rem .8rem;
+      font-size: .7rem; font-weight: 700; letter-spacing: .15em;
+      text-transform: uppercase; border-radius: 2px;
+      animation: floatbadge 4s ease-in-out infinite;
+    }
+    .badge-new {
+      top: 30px; right: -50px;
+      background: var(--neon-red); color: #fff;
+      box-shadow: 0 0 20px var(--neon-red);
+      animation-delay: 0s;
+    }
+    .badge-ep {
+      bottom: 100px; left: -60px;
+      background: rgba(0,245,255,.1); border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      animation-delay: 1.5s;
+    }
+    @keyframes floatbadge { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+    @keyframes fadein { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── TRENDING ── */
+    #trending {
+      padding: 6rem 4rem;
+    }
+    .section-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 3rem;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem; letter-spacing: .05em;
+    }
+    .section-title span { color: var(--neon-red); }
+    .see-all {
+      font-size: .85rem; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none;
+      transition: color .2s;
+    }
+    .see-all:hover { color: var(--neon-cyan); }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    .anime-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .25s, border-color .25s, box-shadow .25s;
+    }
+    .anime-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 20px 40px rgba(0,0,0,.5), 0 0 20px rgba(0,245,255,.08);
+    }
+    .card-thumb {
+      height: 260px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-thumb::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 60%; background: linear-gradient(transparent, var(--surface));
+    }
+    .card-ep-badge {
+      position: absolute; bottom: 8px; right: 8px; z-index: 2;
+      background: rgba(0,0,0,.8); color: var(--neon-cyan);
+      font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+      padding: .15rem .5rem; border-radius: 2px;
+      border: 1px solid rgba(0,245,255,.3);
+    }
+    .card-body { padding: .8rem 1rem 1rem; }
+    .card-genre {
+      font-size: .65rem; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--neon-red); margin-bottom: .3rem;
+    }
+    .card-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.35rem; letter-spacing: .04em; line-height: 1.1;
+    }
+    .card-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: .5rem;
+    }
+    .card-score { font-size: .8rem; color: var(--neon-gold); font-weight: 700; }
+    .card-year { font-size: .75rem; color: var(--muted); }
+
+    /* anime card bg colors */
+    .bg-jjk  { background: linear-gradient(160deg, #1a0820, #0d0d1a); }
+    .bg-aot   { background: linear-gradient(160deg, #1a1208, #0d0d1a); }
+    .bg-dem   { background: linear-gradient(160deg, #081a12, #0d0d1a); }
+    .bg-nrt   { background: linear-gradient(160deg, #1a1008, #0d0d1a); }
+    .bg-hxh   { background: linear-gradient(160deg, #0a0820, #0d0d1a); }
+    .bg-bcl   { background: linear-gradient(160deg, #181818, #0d0d1a); }
+
+    /* ── GENRES ── */
+    #genres { padding: 5rem 4rem; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .genres-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1rem;
+      margin-top: 2.5rem;
+    }
+    .genre-pill {
+      padding: .8rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      text-align: center;
+      cursor: pointer;
+      font-size: .85rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--muted);
+      transition: border-color .2s, color .2s, background .2s;
+    }
+    .genre-pill:hover, .genre-pill.active {
+      border-color: var(--neon-red);
+      color: var(--neon-red);
+      background: rgba(255,45,85,.05);
+    }
+    .genre-pill span { display: block; font-size: 1.5rem; margin-bottom: .3rem; }
+
+    /* ── MARQUEE ── */
+    .marquee-wrap {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      background: var(--bg);
+    }
+    .marquee-track {
+      display: flex; gap: 3rem;
+      animation: marquee 20s linear infinite;
+      white-space: nowrap;
+    }
+    .marquee-item {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem; letter-spacing: .2em;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .marquee-item .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--neon-red); flex-shrink: 0; }
+    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* ── NEWSLETTER ── */
+    #newsletter {
+      padding: 7rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #newsletter::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, rgba(255,45,85,.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    #newsletter .section-title { font-size: 3.5rem; margin-bottom: .8rem; }
+    #newsletter p { color: var(--muted); margin-bottom: 2rem; font-size: 1.1rem; }
+    .newsletter-form {
+      display: flex; gap: .8rem; justify-content: center; max-width: 480px; margin: 0 auto;
+    }
+    .newsletter-form input {
+      flex: 1; padding: .8rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); font-family: 'Rajdhani', sans-serif; font-size: 1rem;
+      border-radius: 2px; outline: none;
+      transition: border-color .2s;
+    }
+    .newsletter-form input:focus { border-color: var(--neon-cyan); }
+    .newsletter-form input::placeholder { color: var(--muted); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 3rem 4rem;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    footer p { font-size: .85rem; color: var(--muted); }
+    .footer-socials { display: flex; gap: 1.5rem; }
+    .footer-socials a {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); border-radius: 2px;
+      color: var(--muted); text-decoration: none; font-size: .9rem;
+      transition: border-color .2s, color .2s;
+    }
+    .footer-socials a:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+
+    /* responsive */
+    @media (max-width: 900px) {
+      #hero { grid-template-columns: 1fr; padding: 7rem 2rem 4rem; }
+      .hero-visual { display: none; }
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      #trending, #genres, #newsletter { padding: 4rem 1.5rem; }
+      .genres-grid { grid-template-columns: repeat(3, 1fr); }
+      footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="#">ANIM<span>AX</span></a>
+    <ul class="nav-links">
+      <li><a href="#trending">Trending</a></li>
+      <li><a href="#genres">Genres</a></li>
+      <li><a href="#">Schedule</a></li>
+      <li><a href="#">Rankings</a></li>
+      <li><a href="#" class="nav-cta">Watch Now</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-bg-text">ANIME</div>
+    <div class="hero-content">
+      <div class="hero-kicker">✦ New Season 2025 ✦</div>
+      <h1 class="hero-title">
+        YOUR PORTAL<br>
+        TO <span class="red">INFINITE</span><br>
+        <span class="cyan">WORLDS</span>
+      </h1>
+      <p class="hero-sub">Stream thousands of anime titles — from timeless classics to the hottest ongoing series. Sub or dub, you choose.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn-primary">Start Watching</a>
+        <a href="#trending" class="btn-ghost">Explore Library</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card">
+        <div class="hero-card-art">
+          <span class="kanji">呪</span>
+        </div>
+        <span class="rating">★ 9.4</span>
+        <div class="hero-card-info">
+          <div class="tag">Action · Fantasy</div>
+          <h3>Jujutsu Kaisen</h3>
+          <p>Season 3 · Episode 12</p>
+        </div>
+      </div>
+      <div class="badge badge-new">New EP</div>
+      <div class="badge badge-ep">EP 24 OUT</div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <span class="marquee-item"><span class="dot"></span>DEMON SLAYER</span>
+      <span class="marquee-item"><span class="dot"></span>ATTACK ON TITAN</span>
+      <span class="marquee-item"><span class="dot"></span>JUJUTSU KAISEN</span>
+      <span class="marquee-item"><span class="dot"></span>HUNTER X HUNTER</span>
+      <span class="marquee-item"><span class="dot"></span>NARUTO</span>
+      <span class="marquee-item"><span class="dot"></span>ONE PIECE</span>
+      <span class="marquee-item"><span class="dot"></span>BLEACH</span>
+      <span class="marquee-item"><span class="dot"></span>FULLMETAL ALCHEMIST</span>
+      <span class="marquee-item"><span class="dot"></span>DEATH NOTE</span>
+      <span class="marquee-item"><span class="dot"></span>DEMON SLAYER</span>
+      <span class="marquee-item"><span class="dot"></span>ATTACK ON TITAN</span>
+      <span class="marquee-item"><span class="dot"></span>JUJUTSU KAISEN</span>
+      <span class="marquee-item"><span class="dot"></span>HUNTER X HUNTER</span>
+      <span class="marquee-item"><span class="dot"></span>NARUTO</span>
+      <span class="marquee-item"><span class="dot"></span>ONE PIECE</span>
+      <span class="marquee-item"><span class="dot"></span>BLEACH</span>
+      <span class="marquee-item"><span class="dot"></span>FULLMETAL ALCHEMIST</span>
+      <span class="marquee-item"><span class="dot"></span>DEATH NOTE</span>
+    </div>
+  </div>
+
+  <!-- TRENDING -->
+  <section id="trending">
+    <div class="section-header">
+      <h2 class="section-title">TRENDING <span>NOW</span></h2>
+      <a href="#" class="see-all">See all →</a>
+    </div>
+    <div class="cards-grid">
+
+      <div class="anime-card">
+        <div class="card-thumb bg-jjk">
+          <span>⚡</span>
+          <div class="card-ep-badge">EP 12</div>
+        </div>
+        <div class="card-body">
+          <div class="card-genre">Action · Supernatural</div>
+          <div class="card-title">Jujutsu Kaisen S3</div>
+          <div class="card-meta">
+            <span class="card-score">★ 9.4</span>
+            <span class="card-year">2025</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="anime-card">
+        <div class="card-thumb bg-aot">
+          <span>🗡️</span>
+          <div class="card-ep-badge">FINAL</div>
+        </div>
+        <div class="card-body">
+          <div class="card-genre">Dark Fantasy · Drama</div>
+          <div class="card-title">Attack on Titan</div>
+          <div class="card-meta">
+            <span class="card-score">★ 9.9</span>
+            <span class="card-year">2024</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="anime-card">
+        <div class="card-thumb bg-dem">
+          <span>🔥</span>
+          <div class="card-ep-badge">EP 28</div>
+        </div>
+        <div class="card-body">
+          <div class="card-genre">Action · Adventure</div>
+          <div class="card-title">Demon Slayer S4</div>
+          <div class="card-meta">
+            <span class="card-score">★ 9.1</span>
+            <span class="card-year">2025</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="anime-card">
+        <div class="card-thumb bg-nrt">
+          <span>🍥</span>
+          <div class="card-ep-badge">EP 52</div>
+        </div>
+        <div class="card-body">
+          <div class="card-genre">Shonen · Adventure</div>
+          <div class="card-title">Naruto Shippuden</div>
+          <div class="card-meta">
+            <span class="card-score">★ 8.7</span>
+            <span class="card-year">CLASSIC</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="anime-card">
+        <div class="card-thumb bg-hxh">
+          <span>⚔️</span>
+          <div class="card-ep-badge">EP 148</div>
+        </div>
+        <div class="card-body">
+          <div class="card-genre">Action · Mystery</div>
+          <div class="card-title">Hunter x Hunter</div>
+          <div class="card-meta">
+            <span class="card-score">★ 9.1</span>
+            <span class="card-year">CLASSIC</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="anime-card">
+        <div class="card-thumb bg-bcl">
+          <span>💀</span>
+          <div class="card-ep-badge">EP 366</div>
+        </div>
+        <div class="card-body">
+          <div class="card-genre">Action · Soul</div>
+          <div class="card-title">Bleach: TYBW</div>
+          <div class="card-meta">
+            <span class="card-score">★ 9.0</span>
+            <span class="card-year">2024</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- GENRES -->
+  <section id="genres">
+    <div class="section-header">
+      <h2 class="section-title">BROWSE BY <span>GENRE</span></h2>
+    </div>
+    <div class="genres-grid">
+      <div class="genre-pill active"><span>⚡</span>Action</div>
+      <div class="genre-pill"><span>🌸</span>Romance</div>
+      <div class="genre-pill"><span>😂</span>Comedy</div>
+      <div class="genre-pill"><span>🔮</span>Fantasy</div>
+      <div class="genre-pill"><span>👻</span>Horror</div>
+      <div class="genre-pill"><span>🤖</span>Mecha</div>
+      <div class="genre-pill"><span>🧠</span>Psychological</div>
+      <div class="genre-pill"><span>🏫</span>School</div>
+      <div class="genre-pill"><span>⚔️</span>Samurai</div>
+      <div class="genre-pill"><span>🚀</span>Sci-Fi</div>
+      <div class="genre-pill"><span>🏆</span>Sports</div>
+      <div class="genre-pill"><span>🌊</span>Slice of Life</div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section id="newsletter">
+    <h2 class="section-title">NEVER MISS AN <span style="color:var(--neon-red)">EPISODE</span></h2>
+    <p>Get weekly updates on new releases, season premieres, and exclusive content.</p>
+    <div class="newsletter-form">
+      <input type="email" placeholder="your@email.com" />
+      <button class="btn-primary" style="white-space:nowrap;">Subscribe</button>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <a class="nav-logo" href="#" style="font-size:1.5rem;">ANIM<span>AX</span></a>
+      <p style="margin-top:.5rem">© 2025 Animax. All rights reserved.</p>
+    </div>
+    <div class="footer-socials">
+      <a href="#" title="Twitter">𝕏</a>
+      <a href="#" title="Discord">⚡</a>
+      <a href="#" title="Reddit">🔴</a>
+      <a href="#" title="YouTube">▶</a>
+    </div>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring   = document.getElementById('cursorRing');
+    let rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top  = e.clientY + 'px';
+      setTimeout(() => {
+        ring.style.left = e.clientX + 'px';
+        ring.style.top  = e.clientY + 'px';
+      }, 80);
+    });
+    document.querySelectorAll('a,button,.anime-card,.genre-pill').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.width = '20px'; cursor.style.height = '20px';
+        cursor.style.background = 'var(--neon-red)';
+        cursor.style.boxShadow = '0 0 20px var(--neon-red)';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.width = '12px'; cursor.style.height = '12px';
+        cursor.style.background = 'var(--neon-cyan)';
+        cursor.style.boxShadow = '0 0 12px var(--neon-cyan)';
+      });
+    });
+
+    // Genre pill toggle
+    document.querySelectorAll('.genre-pill').forEach(pill => {
+      pill.addEventListener('click', function() {
+        document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // Scroll fade-in for cards
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          e.target.style.animationDelay = (i * 0.07) + 's';
+          e.target.style.animation = 'fadein .5s ease forwards';
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.anime-card').forEach(c => {
+      c.style.opacity = '0';
+      observer.observe(c);
+    });
+  </script>
+</body>
+</html>
